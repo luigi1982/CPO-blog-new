@@ -1,0 +1,227 @@
+<!doctype html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style id="distill-article-specific-styles">
+    <%=require("../static/styles.css") %>
+  </style>
+  <script src="https://distill.pub/template.v2.js"></script>
+</head>
+
+<body>
+
+  <d-front-matter>
+    <script type="text/json">
+      <%= JSON.stringify(require("./frontmatter.json"), null, 4) %>
+    </script>
+  </d-front-matter>
+
+  <d-title>
+    <h1>Constrained Policy Optimization (CPO)</h1>
+    <p>An example project using Webpack, Babel, and Svelte. </p>
+  </d-title>
+
+  <d-article>
+
+    <p>
+      The implementation of the CPO algorithm is based on Achiam et al. <d-cite
+          key="achiam2017constrained"></d-cite> 
+    </p>
+    
+    <h4>Introduction</h4>
+    <p>Constrained policy optimization (CPO) is a policy search algorithm for
+	constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
+          key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. In each iteration a problem of the following kind is approximately solved </p>
+	<d-math block="">
+      		\pi_{k+1} = \text{arg max}_{\pi \in \Pi_\theta} J(\pi),
+    	</d-math>
+    	<d-math block="">
+      		\text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m, 
+      		D_{kl}(\pi, \pi_k) \le \delta ,
+    	</d-math>
+   <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, <d-math>J:\Pi_\theta \to R</d-math> is some reward function, <d-math>J_{C_i}:\Pi_\theta \to R</d-math> are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.
+          For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
+          <d-math block="">
+      		\theta_{k+1} = \text{arg max}_{\theta} g^T (\theta - \theta_k),
+      		\text{s.t. } c_i + b_i^T(\theta - \theta_k) \le 0 \text{ for } i=1,...,m,
+      		\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) \le \delta ,
+    	</d-math>
+    	<p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
+    	
+    <h4> </h4>
+    	
+    <d-figure id="cgits-visualization">
+      <figure>
+        <div id="cgits-visualization-target" class="image" style="max-width: 2000px;"></div>
+        <figcaption>
+          Exemplary trajectories for the Frozen Smiley environment with the Optimized policy. 
+          The lines represent the steps taken, while the background shows a heatmap of the student's positions.
+          The trajectories show a progression from the first curriculum step to a later step.
+        </figcaption>
+      </figure>
+    </d-figure>
+
+    <h4>Inlined SVGs</h4>
+    <p>SVGs are so small that it can be nice to save an extra request and simply inline them intop your HTML:</p>
+
+    <figure>
+      <%= require("../static/images/CartPole_mid_200its.svg") %>
+    </figure>
+
+    <h4>Citations</h4>
+
+    <p>We can<d-cite key="mercier2011humans"></d-cite> also cite <d-cite
+        key="gregor2015draw,mercier2011humans,openai2018charter"></d-cite> external publications. <d-cite
+        key="dong2014image,dumoulin2016guide,mordvintsev2015inceptionism"></d-cite>. We should also be testing
+      footnotes
+      <d-footnote id="d-footnote-1">This will become a hoverable footnote. This will become a hoverable footnote. This
+        will become a
+        hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote. This will
+        become a hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote.
+      </d-footnote>. There are multiple footnotes, and they appear in the appendix<d-footnote id="d-footnote-2">Given I
+        have coded them
+        right. Also, here's math in a footnote: <d-math>c = \sum_0^i{x}</d-math>. Also, a citation. Box-ception<d-cite
+          key="gregor2015draw"></d-cite>!</d-footnote> as well.</p>
+
+
+    <h4>Displaying code</h4>
+    <p>Some inline javascript:<d-code language="javascript">var x = 25;</d-code>. And here's a javascript code block.
+    </p>
+
+    <d-code block="" language="javascript">
+      var x = 25;
+      function(x){
+      return x * x;
+      }
+    </d-code>
+    <p>We also support some highlighting.</p>
+    <d-code block="" language="python">
+      # Python 3: Fibonacci series up to n
+      def fib(n):
+      a, b = 0, 1
+      while a &lt; n: print(a, end=' ' ) a, b=b, a+b </d-code>
+
+    <h4>Tables</h4>
+    <p>We have simple tables that try to stay readable at most screen sizes:
+    </p>
+
+    <style>
+      #example-table {
+        overflow-x: scroll;
+      }
+
+      #example-table th {
+        white-space: nowrap;
+      }
+
+      #example-table tbody th {
+        font-weight: initial;
+        border-bottom: 1px solid rgb(242, 242, 242);
+      }
+
+      #example-table tbody tr:last-of-type th {
+        border-bottom: inherit;
+      }
+
+      #example-table td,
+      #example-table thead th {
+        text-align: center;
+      }
+
+      #example-table td {
+        border-color: rgb(242, 242, 242);
+      }
+
+      #example-table td.no {
+        background-color: #f6f6f6;
+      }
+    </style>
+    <table id="example-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th scope="col">Parallel</th>
+          <th scope="col">Efficient</th>
+          <th scope="col">Reversible</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">GANs</th>
+          <td>Yes</td>
+          <td>Yes</td>
+          <td class="no">No</td>
+        </tr>
+        <tr>
+          <th scope="row">Flow Models</th>
+          <td>Yes</td>
+          <td class="no">No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <th scope="row">Autoregressive Models</th>
+          <td class="no">No</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Interactive Figures</h4>
+
+    <p>
+      Here's a dynamically instantiated "figure". We use Intersection Observers to allow loading resource-heavy
+      figures only when readers scroll close to them. The code for this is in <code>src/index.js</code>.
+    </p>
+
+    <d-figure id="svelte-example-dfigure">
+      <figure>
+        <div id="svelte-example-target"></div>
+        <figcaption>And a static figcaption. You can use citations<d-cite key="mercier2011humans"></d-cite> in this
+          figcaption, but not in text added by javascript.</figcaption>
+      </figure>
+    </d-figure>
+
+    <p>You can't use citation tags (<code>d-cite</code>) in figures that are dynamically loaded using Javascript.
+      Distill statically
+      analyzes your submission for its citations, because they need to be uploaded to indexers and organizations like <a
+        href="https://www.crossref.org/">CrossRef</a> and <a href="https://scholar.google.com">Google Scholar</a>.</p>
+
+    <p>That's it for the example article! Feel free to look at <a
+        href="https://github.com/distillpub?utf8=%E2%9C%93&q=post--&type=public">implementations
+        of existing Distill articles</a>, or ask for help in
+      the <a href="http://slack.distill.pub">Distill Slack Community</a>.</p>
+
+  </d-article>
+
+
+
+  <d-appendix>
+    <h3>Acknowledgments</h3>
+    <p>
+      We are deeply grateful to...
+    </p>
+
+    <p>
+      Many of our diagrams are based on...
+    </p>
+
+    <h3>Author Contributions</h3>
+    <p>
+      <b>Research:</b> Alex developed ...
+    </p>
+
+    <p>
+      <b>Writing & Diagrams:</b> The text was initially drafted by...
+    </p>
+
+
+    <d-footnote-list></d-footnote-list>
+    <d-citation-list></d-citation-list>
+  </d-appendix>
+
+  <!-- bibliography will be inlined during Distill pipeline's pre-rendering -->
+  <d-bibliography src="bibliography.bib"></d-bibliography>
+
+</body>

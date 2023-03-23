@@ -4,6 +4,8 @@ import * as _unused from "raw-loader!./index.ejs";
 
 import Example from "./diagrams/svelte-example.svelte";
 import CGits from "./diagrams/different-cgits.svelte";
+import CGitsRes from "./diagrams/different-cgits-residual.svelte";
+import comp10vs100 from "./diagrams/comp10vs100cg.svelte";
 
 // lazily initialize any diagram below the fold. E.G:
 const exampleTag = document.getElementById("svelte-example-dfigure");
@@ -18,4 +20,18 @@ let cgits;
 cgitsTag.addEventListener("ready", () => {
 	const target = cgitsTag.querySelector("#cgits-visualization-target");
 	cgits = new CGits({ target });
+});
+
+const cgitsresTag = document.getElementById("residual-visualization");
+let cgitsres;
+cgitsresTag.addEventListener("ready", () => {
+	const target = cgitsresTag.querySelector("#residual-visualization-target");
+	cgitsres = new CGitsRes({ target });
+});
+
+const cgits10vs100Tag = document.getElementById("constraint-visualization");
+let cgits10vs100;
+cgits10vs100Tag.addEventListener("ready", () => {
+	const target = cgits10vs100Tag.querySelector("#constraint-visualization-target");
+	cgits10vs100 = new comp10vs100({ target });
 });

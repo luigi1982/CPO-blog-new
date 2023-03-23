@@ -29,9 +29,9 @@
 <div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em">
   <div style="text-align:center;">
     <input type="checkbox" id="CartBox" name="CartBox" value="Cart" on:input={inputC}>
-    <label for="vehicle1"> CartPole</label>
+    <label for="CartBox"> CartPole</label>
     <input type="checkbox" id="LunarBox" name="LunarBox" value="Lunar" on:input={inputL}>
-    <label for="vehicle1"> LunarLander</label>
+    <label for="LunarBox"> LunarLander</label>
   </div>
   <img
     src="images/learning_prog_env{env}cg{cgits[count]}.svg"

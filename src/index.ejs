@@ -49,124 +49,71 @@
     	</d-math>
     	<p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
     	
-    <h4> </h4>
+    <h4> CG iteration </h4>
+    
+    <p> As seen in the introductory part computing the CPO update involves a lot of expressions as <d-math> H^{-1}b, H^{-1}g </d-math>.
+    	Computing the inverse of a matrix is computationally very expensive, hence Achiam et al. <d-cite
+          key="achiam2017constrained"></d-cite> advice the reader to circumvent it, by instead solving the linear algebraic systems <d-math> Hx = b</d-math> and <d-math> Hx = g</d-math>
+          respectively. Obviously in exact arithmetics the respective solutions would give us the quantities we are looking for, but as most of us only have access to the floating point numbers in the IEEE 754 standard, 
+          for this matter we will have to resort to some approximation. Here Achiam et al. <d-cite
+          key="achiam2017constrained"></d-cite> propose to use the CG Algorithm, this is an iterative method for solving linear algebraic systems particularly designed for symmetric positiv-definite matrices, cf. <d-cite
+          key="liesen2023"></d-cite> chapter 4.2.
+    </p>
+    <p> To observe the influence of the quality of the approximation of said quantities we ran the CPO algorithm with different numbers of CG-iterations.
+    	Our hypothesis was that increasing the number of iterations would lead to an improvement in the learning progress.
+    	Since the better approximation would lead to more accurate steps and thus 
+    	the practical implemantation would be closer to the theoretically derived update.
+    </p>
     	
     <d-figure id="cgits-visualization">
       <figure>
         <div id="cgits-visualization-target" class="image" style="max-width: 2000px;"></div>
         <figcaption>
-          Exemplary trajectories for the Frozen Smiley environment with the Optimized policy. 
-          The lines represent the steps taken, while the background shows a heatmap of the student's positions.
-          The trajectories show a progression from the first curriculum step to a later step.
+          Learning progress and constraint satisfaction in the LunarLander and CartPole environment for various agents trained with different numbers of CG-iterations within each update step. <br>
+          In the LunarLander environment the agent was supposed to not surpase a certain speed whilst for CartPole he was supposed to stay whithin the middle section of the screen.
         </figcaption>
       </figure>
     </d-figure>
-
-    <h4>Inlined SVGs</h4>
-    <p>SVGs are so small that it can be nice to save an extra request and simply inline them intop your HTML:</p>
-
-    <figure>
-      <%= require("../static/images/CartPole_mid_200its.svg") %>
-    </figure>
-
-    <h4>Citations</h4>
-
-    <p>We can<d-cite key="mercier2011humans"></d-cite> also cite <d-cite
-        key="gregor2015draw,mercier2011humans,openai2018charter"></d-cite> external publications. <d-cite
-        key="dong2014image,dumoulin2016guide,mordvintsev2015inceptionism"></d-cite>. We should also be testing
-      footnotes
-      <d-footnote id="d-footnote-1">This will become a hoverable footnote. This will become a hoverable footnote. This
-        will become a
-        hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote. This will
-        become a hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote.
-      </d-footnote>. There are multiple footnotes, and they appear in the appendix<d-footnote id="d-footnote-2">Given I
-        have coded them
-        right. Also, here's math in a footnote: <d-math>c = \sum_0^i{x}</d-math>. Also, a citation. Box-ception<d-cite
-          key="gregor2015draw"></d-cite>!</d-footnote> as well.</p>
-
-
-    <h4>Displaying code</h4>
-    <p>Some inline javascript:<d-code language="javascript">var x = 25;</d-code>. And here's a javascript code block.
-    </p>
-
-    <d-code block="" language="javascript">
-      var x = 25;
-      function(x){
-      return x * x;
-      }
-    </d-code>
-    <p>We also support some highlighting.</p>
-    <d-code block="" language="python">
-      # Python 3: Fibonacci series up to n
-      def fib(n):
-      a, b = 0, 1
-      while a &lt; n: print(a, end=' ' ) a, b=b, a+b </d-code>
-
-    <h4>Tables</h4>
-    <p>We have simple tables that try to stay readable at most screen sizes:
-    </p>
-
-    <style>
-      #example-table {
-        overflow-x: scroll;
-      }
-
-      #example-table th {
-        white-space: nowrap;
-      }
-
-      #example-table tbody th {
-        font-weight: initial;
-        border-bottom: 1px solid rgb(242, 242, 242);
-      }
-
-      #example-table tbody tr:last-of-type th {
-        border-bottom: inherit;
-      }
-
-      #example-table td,
-      #example-table thead th {
-        text-align: center;
-      }
-
-      #example-table td {
-        border-color: rgb(242, 242, 242);
-      }
-
-      #example-table td.no {
-        background-color: #f6f6f6;
-      }
-    </style>
-    <table id="example-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th scope="col">Parallel</th>
-          <th scope="col">Efficient</th>
-          <th scope="col">Reversible</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th scope="row">GANs</th>
-          <td>Yes</td>
-          <td>Yes</td>
-          <td class="no">No</td>
-        </tr>
-        <tr>
-          <th scope="row">Flow Models</th>
-          <td>Yes</td>
-          <td class="no">No</td>
-          <td>Yes</td>
-        </tr>
-        <tr>
-          <th scope="row">Autoregressive Models</th>
-          <td class="no">No</td>
-          <td>Yes</td>
-          <td>Yes</td>
-        </tr>
-      </tbody>
-    </table>
+    
+    <p> To further understand the impact of the increased amount of CG-iterations we had a look at the relative forward error.
+    For a linear algebraic system <d-math> Ax = b </d-math> this quantity is given by
+    	<d-math>
+      		\frac{||x-\hat{x}||}{||x||}
+    	</d-math>
+    	for some approximation <d-math> \hat{x} </d-math> and some norm <d-math> ||\cdot|| </d-math>, this value is useful to evaluate the quality of an estimation. As we do not know the exact solution <d-math> x </d-math> in most cases, we can only use bounds to assess it.
+    	One such bound we are going to use, is the following</p>
+    <d-math block="">
+      		\frac{||x-\hat{x}||}{||x||} \le K(A) \frac{||r||}{||b||},
+    	</d-math>
+    <p>where <d-math> K(A) </d-math> is the condition number of <d-math> A </d-math> w.r.t. <d-math> ||\cdot|| </d-math> and <d-math> r = b - A\hat{x} </d-math> is the residual.
+    This bound tells us, if the matrix <d-math> A </d-math> has a reasonable condition number a small residual implies a good approximation.</p>
+    	
+    <d-figure id="residual-visualization">
+      <figure>
+        <div id="residual-visualization-target" class="image" style="max-width: 2000px;"></div>
+        <figcaption>
+          Plot of the residual and bound on the relative forward error with respect to the 2-norm, here <d-math> r1 = ||b - H\hat{x}||_2 </d-math> and <d-math> r2 = ||g - H\hat{x}||_2 </d-math>.
+        </figcaption>
+      </figure>
+    </d-figure>
+    
+    <p> Indeed we can see in the second graph that increasing the number of CG-iterations to fifty and above drastically lowers the residualnorm and the bound on relative forward error.
+    Also for both environments for 10 and 20 CG-iterations the bound on the relative forward error sometimes lies way beyond 1, implying that the approximation might not be better than a random guess. On the other hand, in terms of the reward when looking at the first graph the impact is not noticeable, it behaves rather similar for all four different values.
+    One explanation could be that our approximation of the consdition number of <d-math> H </d-math> is too pesimistic. </p>
+    
+    <d-figure id="constraint-visualization">
+      <figure>
+        <div id="constraint-visualization-target" class="image" style="max-width: 2000px;"></div>
+        <figcaption>
+          Direct comparison between 10 and 100 CG-iterations of the behaviour of the constraint value.
+        </figcaption>
+      </figure>
+    </d-figure>
+    
+    <p> Only when considering the constraint value one could argue that increasing the number of CG-iterations leads to a somewhat more stable behaviour during training. 
+    Moreover to further justify this point for oneself one would have to ignore the last 25 iterations in the LunarLander environment.
+    All in all our experiments seem to indicate that the impact of the number of CG-iterations is rather subtle and does not considerably improve the training proccess,
+    obviously for more reliable results more experiments would need to be conducted.</p>
 
     <h4>Interactive Figures</h4>
 

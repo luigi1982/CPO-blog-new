@@ -200,16 +200,11 @@
 
     <h4> Trust region </h4>
 
-    <p> In theory, a large $\delta$ value, which is the size of the trust region, should have an effect on
-      the performance of the model. 
-      <br>
-      Our hypothesis here is: For large $\delta$, the algorithm would proceed toward the objective function faster
-      but has trouble to fit the objective function and the constraint would be violated more often. 
-      And for small $\delta$, the algorithm will take longer to train and has lower performance for the reward value. 
-      However, the probability that the agent violates our constraint would be lower.
+    <p> In our introductory part, we already mentioned our hypothesis of the trust region size's effect on the model's training
 <br>
-      To test this hypothesis, we experimented by training the agent with five different values of 
-      $\delta$ in order to analyze the performance of the agent.
+      To test this hypothesis, we train the agent for $\delta \in \{0.001, 0.01, 0.05, 0.1\}$ and again for 100 iterations. 
+      According to our hypothesis, the performance of a model w.r.t a large trust region size should be higher than those of the smaller size for the reward values. Its constraint
+      value, however, should be higher and might not converge to the limit.
     </p>
     <p>
       In the first figure, we showcase the reward value obtained after 100 training iterations for both CartPole and 
@@ -243,8 +238,7 @@
       to achieve a much higher reward but on the other hand, its constraint value never really managed to converge to the limit.
       <br>
       For the LunarLander environment, the result, however, does not support our hypothesis. If we take a look at the reward values
-      w.r.t $\delta = 0.05$, the graph just oscilitates after iteration 60th. Whereas the same case could not be found for an 
-      even larger $\delta = 0.1$. Ergo, we cannot confirm our hypothesis after having analyzed the LunarLander environment. 
+      w.r.t $\delta = 0.05$, the graph oscilitates after the 60th iteration. On the other hand, the same case does not apply for an even larger $\delta = 0.1$. Ergo, we cannot confirm our hypothesis after having analyzed the LunarLander environment. 
       Although, this problem might occur because of a mistake in our technical implementation.
     </p>
     <h4>Interactive Figures</h4>

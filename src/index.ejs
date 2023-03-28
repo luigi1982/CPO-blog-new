@@ -25,29 +25,113 @@
   <d-article>
 
     <p>
-      The implementation of the CPO algorithm is based on Achiam et al. <d-cite
-          key="achiam2017constrained"></d-cite> 
+      Welcome to our paper on constraint policy optimization (CPO). 
+      In this article, we will discuss the CPO method for safe reinforcement learning, 
+      which was presented in Achiam et al. <d-cite
+      key="achiam2017constrained"></d-cite> 
+      Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander
+      To implement the CPO method, we apply the CG method to improve the algorithm. 
+      Furthermore, we experimented different CG iterations to see if the algorithm could be improved.
+      <br>
+      Also, it was mentioned in the paper that the implementation of trust region could accelerate the model's training.
+      Theoretically, a model with a large trust region would converge to the objective function faster but fit it poorly,
+      and one with a small trust region would converge slower but fit the objective function better. Our hypothesis is: 
+      For a trust region with a large size, the model will achieve higher rewards but might violate
+      the constraint more often. On the other hand, a model with a small trust region would stay closer to the constraint,
+      at the cost of achieving higher rewards.
+      <br>
+      For the implementation of the algorithm, we based our code on the work of Chaudhary, Sapana 
+      (https://github.com/SapanaChaudhary/PyTorch-CPO) and on Achiam et al. <d-cite
+      key="achiam2017constrained"></d-cite> 
     </p>
+
+    <br>
     
-    <h4>Introduction</h4>
-    <p>Constrained policy optimization (CPO) is a policy search algorithm for
-	constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
-          key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. In each iteration a problem of the following kind is approximately solved </p>
-	<d-math block="">
-      		\pi_{k+1} = \text{arg max}_{\pi \in \Pi_\theta} J(\pi),
-    	</d-math>
-    	<d-math block="">
-      		\text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m, 
-      		D_{kl}(\pi, \pi_k) \le \delta ,
-    	</d-math>
-   <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, <d-math>J:\Pi_\theta \to R</d-math> is some reward function, <d-math>J_{C_i}:\Pi_\theta \to R</d-math> are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.
-          For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
-          <d-math block="">
-      		\theta_{k+1} = \text{arg max}_{\theta} g^T (\theta - \theta_k),
-      		\text{s.t. } c_i + b_i^T(\theta - \theta_k) \le 0 \text{ for } i=1,...,m,
-      		\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) \le \delta ,
-    	</d-math>
-    	<p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
+
+    <h3>Table of contents</h3>
+    <p>
+
+      <ol>
+        <li>Introduction of the algorithm</li>
+          <ol>
+            <li>Abstract theory</li>
+            <li>Solution</li>
+          </ol>
+        <li>Showcase</li>
+        <ol>
+          <li>CartPole</li>
+          <li>LunarLander</li>
+        </ol>
+        <li>Experiments:</li>
+        <ol>
+          <li>CG-method</li>
+          <li>Trust region step</li>
+        </ol>
+      </ol> 
+    </p>   
+  <h3>Introduction of the algorithm</h3>
+  <p>Constrained policy optimization (CPO) is a policy search algorithm for
+constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
+        key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. In each iteration a problem of the following kind is approximately solved </p>
+<d-math block="">
+        \pi_{k+1} = \arg \max_{\pi \in \Pi_\theta} J(\pi),
+    </d-math>
+    <d-math block="">
+        \text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m,  \quad
+        D_{kl}(\pi, \pi_k) \le \delta ,
+    </d-math>
+    <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, <d-math>J:\Pi_\theta \to R</d-math> is some reward function, <d-math>J_{C_i}:\Pi_\theta \to R</d-math> are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.
+        For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
+        <d-math block="">
+        \theta_{k+1} = \arg \max_{\theta} g^T (\theta - \theta_k),
+      </d-math>
+      <d-math block="">
+        \text{s.t. } c_i + b_i^T(\theta - \theta_k) \le 0 \text{ for } i=1,...,m, \quad
+        \frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) \le \delta ,
+    </d-math>
+    <p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
+      <p> To solve this optimization with consideration of constraints problem, we first present the 
+        dual to the problem which is
+      </p>
+  
+      <d-math block =""> 
+        \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2\lambda} (g^\top H^{-1}g - 2r^T \nu + \nu^{\top}S\nu) + \nu^\top c \frac{\lambda \delta}{2}
+      </d-math>
+      <p>
+        Whereas
+        <br>
+        $B := [b_1, b_2,...]^\top, \quad$ $c :=  [c_1, c_2,...]^\top, \quad $ 
+        $r := g^\top H^{-1} B, \quad $ $S := B^\top H^{-1} B$
+        </p>
+        Fortunately, since the number of constraints is equal to the number of dimensions in vector $\nu$, it is possible
+        to solve the dual problem for an analytical solution in case we only have one constraint. Now we assume that this is 
+        the case. 
+        <h4>Solution to the dual problem</h4>
+        Following the assumption above, we solve for $\lambda^*$ and $\nu^*$ using Lagrangian method,
+         and achieve the solution to the dual problem (when it is FEASIBLE):
+  
+      <d-math block =""> \theta^* = \theta_k + \frac{1}{\lambda^*}H^{-1}(g - B\nu^*) </d-math>
+        Whereas $\nu^* = (\frac{\lambda^*c-r}{S})_+$ and
+        $\lambda^* =\arg \max
+        \frac{1}{2\lambda}(\frac{r^2}{s}-q) + \frac{\lambda}{2}(\frac{c^2}{s}-q)$ if  $\lambda c - r > 0$
+        <br>
+        <br>
+        or $\lambda^* =\arg \max\frac{1}{2}(\frac{q}{\lambda}+ \lambda \delta)$, if otherwise.
+
+        <br>
+        <br>
+        When it is however, infeasible, we use the following update rule:
+  
+      <d-math block =""> \theta^* = \theta_k - \sqrt{\frac{2\delta}{b^\top H^{-1}b}}H^{-1}b</d-math>
+  <br>
+  <p> 
+        For our next step, we implemented the solution to the dual problem above using Python.
+        Before we showcase the results, it is clear that the algorithm might require great computational power, 
+        since we deal a lot with the inverse matrix problem ($H^{-1}b$). 
+        To improve the efficiency of the algorithm, we applied the CG method to solve the inverse matrix problem.
+        <br>
+        Furthermore, the trust region coefficients play an important role in our algorithm, since it would affect our backtrack step in case of infeasibility.
+  </p>  
     	
     <h4> Results Showcase </h4>
     
@@ -163,6 +247,53 @@
     Moreover to further justify this point for oneself one would have to ignore the last 25 iterations in the LunarLander environment.
     All in all our experiments seem to indicate that the impact of the number of CG-iterations is rather subtle and does not considerably improve the training proccess,
     obviously for more reliable results more experiments would need to be conducted.</p>
+
+    <h4> Trust region </h4>
+
+    <p> In our introductory part, we already mentioned our hypothesis of the trust region size's effect on the model's training
+<br>
+      To test this hypothesis, we train the agent for $\delta \in \{0.001, 0.01, 0.05, 0.1\}$ and again for 100 iterations. 
+      According to our hypothesis, the performance of a model w.r.t a large trust region size should be higher than those of the smaller size for the reward values. Its constraint
+      value, however, should be higher and might not converge to the limit.
+    </p>
+    <p>
+      In the first figure, we showcase the reward value obtained after 100 training iterations for both CartPole and 
+      LunarLander environments.
+    </p>
+    <d-figure id="constraint-visualization-trust-region-reward">
+      <figure>
+        <div id="constraint-visualization-trust-region-reward-target" class="image" style="max-width: 2000px;"></div>
+        <figcaption>
+          Comparision of reward values for different trust region sizes
+        </figcaption>
+      </figure>
+    </d-figure>
+    <p>
+      <p>
+        In the second figure, we showcase the constraint value obtained after 100 training iterations for both CartPole and 
+        LunarLander environments.
+      </p>      
+    </p>
+
+    <d-figure id="constraint-visualization-trust-region-constraint">
+      <figure>
+        <div id="constraint-visualization-trust-region-constraint-target" class="image" style="max-width: 2000px;"></div>
+        <figcaption>
+          Comparision of constraint values for different trust region sizes
+        </figcaption>
+      </figure>
+    </d-figure>
+    <p>
+      For the CartPole environment, our hypothesis seems to be true, since the agent trained with large $\delta$ managed
+      to achieve a much higher reward but on the other hand, its constraint value never really managed to converge to the limit.
+      <br>
+      For the LunarLander environment, the result, however, does not support our hypothesis. If we take a look at the reward values
+      w.r.t $\delta = 0.05$, the graph oscilitates after the 60th iteration. On the other hand, the same case does not apply for an even larger $\delta = 0.1$. Ergo, we cannot confirm our hypothesis after having analyzed the LunarLander environment. 
+      Although, this problem might occur because of a mistake in our technical implementation.
+    </p>
+
+
+
 
     <h4>Interactive Figures</h4>
 

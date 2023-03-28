@@ -2,7 +2,6 @@
 import * as _unused from "raw-loader!./index.ejs";
 // TODO: disable before publishing
 
-import Example from "./diagrams/svelte-example.svelte";
 import CGits from "./diagrams/different-cgits.svelte";
 import CGitsRes from "./diagrams/different-cgits-residual.svelte";
 import comp10vs100 from "./diagrams/comp10vs100cg.svelte";
@@ -10,12 +9,6 @@ import compTrReward from "./diagrams/comp_tr_reward.svelte";
 import compTrConstraint from "./diagrams/comp_tr_constraint.svelte";
 
 // lazily initialize any diagram below the fold. E.G:
-const exampleTag = document.getElementById("svelte-example-dfigure");
-let example;
-exampleTag.addEventListener("ready", () => {
-	const target = exampleTag.querySelector("#svelte-example-target");
-	example = new Example({ target });
-});
 
 const cgitsTag = document.getElementById("cgits-visualization");
 let cgits;
@@ -51,4 +44,3 @@ trConstraintTag.addEventListener("ready", () => {
 	const target = trConstraintTag.querySelector("#constraint-visualization-trust-region-constraint-target");
 	trConstraint = new compTrConstraint({ target });
 });
-

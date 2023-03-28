@@ -24,114 +24,255 @@
 
   <d-article>
 
-      <p>
-        Welcome to our paper on constraint policy optimization (CPO). 
-        In this article, we will discuss the CPO method for safe reinforcement learning, 
-        which was presented in Achiam et al. <d-cite
-        key="achiam2017constrained"></d-cite> 
-        Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander
-        To implement the CPO method, we apply the CG method to improve the algorithm. 
-        Furthermore, we experimented different CG iterations to see if the algorithm could be improved.
-        <br>
-        Also, it was mentioned in the paper that the implementation of trust region could accelerate the model's training.
-        Theoretically, a model with a large trust region would converge to the objective function faster but fit it poorly,
-        and one with a small trust region would converge slower but fit the objective function better. Our hypothesis is: 
-        For a trust region with a large size, the model will achieve higher rewards but might violate
-        the constraint more often. On the other hand, a model with a small trust region would stay closer to the constraint,
-        at the cost of achieving higher rewards.
-        <br>
-        For the implementation of the algorithm, we based our code on the work of Chaudhary, Sapana 
-        (https://github.com/SapanaChaudhary/PyTorch-CPO) and on Achiam et al. <d-cite
-        key="achiam2017constrained"></d-cite> 
+    <p>
+      Welcome to our paper on constraint policy optimization (CPO). 
+      In this article, we will discuss the CPO method for safe reinforcement learning, 
+      which was presented in Achiam et al. <d-cite
+      key="achiam2017constrained"></d-cite> 
+      Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander
+      To implement the CPO method, we apply the CG method to improve the algorithm. 
+      Furthermore, we experimented different CG iterations to see if the algorithm could be improved.
+      <br>
+      Also, it was mentioned in the paper that the implementation of trust region could accelerate the model's training.
+      Theoretically, a model with a large trust region would converge to the objective function faster but fit it poorly,
+      and one with a small trust region would converge slower but fit the objective function better. Our hypothesis is: 
+      For a trust region with a large size, the model will achieve higher rewards but might violate
+      the constraint more often. On the other hand, a model with a small trust region would stay closer to the constraint,
+      at the cost of achieving higher rewards.
+      <br>
+      For the implementation of the algorithm, we based our code on the work of Chaudhary, Sapana 
+      <d-cite
+      key="Sapana"></d-cite>  and on Achiam et al. <d-cite
+      key="achiam2017constrained"></d-cite> 
+    </p>
+
+    <br>
+    
+
+    <h3>Table of contents</h3>
+    <p>
+
+      <ol>
+        <li>Introduction of the algorithm</li>
+          <ol>
+            <li>Abstract theory</li>
+            <li>Solution</li>
+          </ol>
+        <li>Showcase</li>
+        <ol>
+          <li>CartPole</li>
+          <li>LunarLander</li>
+        </ol>
+        <li>Experiments:</li>
+        <ol>
+          <li>CG-method</li>
+          <li>Trust region step</li>
+        </ol>
+      </ol> 
+    </p>   
+  <h3>Introduction of the algorithm</h3>
+  <p> In this section we briefly describe how one derives the practical implementation of the CPO algorithm from the theoretical framework Achiam et al. <d-cite
+        key="achiam2017constrained"></d-cite> have build .</p>
+  <h4>Abstract theory</h4>
+  <p>Constrained policy optimization (CPO) is a policy search algorithm for
+constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
+        key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. For details we refer to their paper <d-cite
+        key="achiam2017constrained"></d-cite>. In each iteration $k = 1,2, ...$ a problem of the following kind is approximately solved </p>
+<d-math block="">
+        \pi_{k+1} = \arg \max_{\pi \in \Pi_\theta} J(\pi),
+    </d-math>
+    <d-math block="">
+        \text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m,  \quad
+        D_{kl}(\pi, \pi_k) \le \delta ,
+    </d-math>
+    <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, $J:\Pi_\theta \to \mathbb{R}$ is some reward function, $J_{C_i}:\Pi_\theta \to \mathbb{R}$ are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.</p>
+        
+        <p>For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
+        <d-math block="">
+        \theta_{k+1} = \arg \max_{\theta} g^T (\theta - \theta_k),
+      </d-math>
+      <d-math block="">
+        \text{s.t. } c_i + b_i^T(\theta - \theta_k) \le 0 \text{ for } i=1,...,m, \quad
+        \frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) \le \delta ,
+    </d-math>
+    <p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
+      <p> As one assumes $H$ to be positive definite, all the functions appearing in this problem are either linear or convex, which makes this a convex optimization problem.
+      	According to Achiam et al. <d-cite
+        key="achiam2017constrained"></d-cite> when the problem is feasible one can hence dualize it and the dual is given by
       </p>
   
-      <br>
-      
-  
-      <h3>Table of contents</h3>
+      <d-math block =""> 
+        \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2\lambda} (g^\top H^{-1}g - 2r^T \nu + \nu^{\top}S\nu) + \nu^\top c \frac{\lambda \delta}{2},
+      </d-math>
       <p>
-  
-        <ol>
-          <li>Introduction of the algorithm</li>
-            <ol>
-              <li>Abstract theory</li>
-              <li>Solution</li>
-            </ol>
-          <li>Showcase</li>
-          <ol>
-            <li>CartPole</li>
-            <li>LunarLander</li>
-          </ol>
-          <li>Experiments:</li>
-          <ol>
-            <li>CG-method</li>
-            <li>Trust region step</li>
-          </ol>
-        </ol> 
-      </p>   
-    <h3>Introduction of the algorithm</h3>
-    <p>Constrained policy optimization (CPO) is a policy search algorithm for
-	constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
-          key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. In each iteration a problem of the following kind is approximately solved </p>
-	<d-math block="">
-      		\pi_{k+1} = \arg \max_{\pi \in \Pi_\theta} J(\pi),
-    	</d-math>
-    	<d-math block="">
-      		\text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m,  \quad
-      		D_{kl}(\pi, \pi_k) \le \delta ,
-    	</d-math>
-      <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, <d-math>J:\Pi_\theta \to R</d-math> is some reward function, <d-math>J_{C_i}:\Pi_\theta \to R</d-math> are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.
-          For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
-          <d-math block="">
-      		\theta_{k+1} = \arg \max_{\theta} g^T (\theta - \theta_k),
-        </d-math>
-        <d-math block="">
-      		\text{s.t. } c_i + b_i^T(\theta - \theta_k) \le 0 \text{ for } i=1,...,m, \quad
-      		\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) \le \delta ,
-    	</d-math>
-    	<p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
-        <p> To solve this optimization with consideration of constraints problem, we first present the 
-          dual to the problem which is
-        </p>
-    
-        <d-math block =""> 
-          \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2\lambda} (g^\top H^{-1}g - 2r^T \nu + \nu^{\top}S\nu) + \nu^\top c \frac{\lambda \delta}{2}
-        </d-math>
+        where $B,c,r$ and $S$ are defined as </p>
         <p>
-          Whereas
-          <br>
-          $B := [b_1, b_2,...]^\top, \quad$ $c :=  [c_1, c_2,...]^\top, \quad $ 
-          $r := g^\top H^{-1} B, \quad $ $S := B^\top H^{-1} B$
-          </p>
-          Fortunately, since the number of constraints is equal to the number of dimensions in vector $\nu$, it is possible
-          to solve the dual problem for an analytical solution in case we only have one constraint. Now we assume that this is 
-          the case. 
-          <h4>Solution to the dual problem</h4>
-          Following the assumption above, we solve for $\lambda^*$ and $\nu^*$ using Lagrangian method,
-           and achieve the solution to the dual problem (when it is FEASIBLE):
+        $B := [b_1,..., b_m]^\top, \quad$ $c :=  [c_1,..., c_m]^\top, \quad $ 
+        $r := g^\top H^{-1} B, \quad $ $S := B^\top H^{-1} B$.
+        </p>
+        <p>Moreover they state that the solution to the primal problem can be recovered in the following way</p>
+      	<p style="text-align:center">
+      		$\theta^* = \theta_k + \frac{1}{\lambda^*}H^{-1}(g - B\nu^*),$
+    	</p>
+      	
+      	<p>where $\lambda^*$ and $\nu^*$ are the solutions to the dual problem.
+      	The advantage of solving the dual problem is a way lower number of variables,
+      	as in the dual appears one variable per constraint.
+      	Hence for a small number of constraints solving the dual is computationally less expensive.
+      	In the special case for one constraint ($m=1$) the solution can even be analytically derived.
+      	We show this in a bit more detail in the next section.
+      	</p>
+        
+     <h4>Solution, solving the dual problem and formulating a recovery step</h4>
+        <p>For more details on the following we refer to <d-cite key="achiam2017constrained"></d-cite> Appendix 10.2 . As stated above when $m=1$ the dual can be analytically solved for $\lambda^*$ and $\nu^*$ and the primal solution can be recovered by</p>
+         <p style="text-align:center">
+      		$\theta^* = \theta_k + \frac{1}{\lambda^*}H^{-1}(g - B\nu^*).$
+    	</p>
+    	<p> The only question left to answer is how to obtain the optimal dual solutions $\lambda^*$ and $\nu^*$.
+    	    Using strict duality Achiam et al. <d-cite key="achiam2017constrained"></d-cite> derive the following equalities for $\lambda^*$ and $\nu^*$,
+    	 $\nu^* = (\frac{\lambda^*c-r}{S})_+$ and </p>
+        <p style="text-align:center">
+        $\lambda^* =\arg \max_{\lambda \ge 0} \begin{cases}
+        					f_a(\lambda) = \frac{1}{2\lambda}(\frac{r^2}{s}-q) + \frac{\lambda}{2}(\frac{c^2}{s}-q), \text{ if }  \lambda c - r > 0 \\
+						f_b(\lambda) = \frac{1}{2}(\frac{q}{\lambda}+ \lambda \delta), \text{ if otherwise } \end{cases}$ ,
+	</p>
+	<p> where here $q$ is given by $g^T H^{-1} g$. Both of these functions required for the calculation of $\lambda^*$ are of the form<p>
+	<p style="text-align:center">
+        $10$ ,
+	</p>
+        <p>When it is however infeasible Achiam et al. <d-cite key="achiam2017constrained"></d-cite> propose the following recovery step</p>
+        <p style="text-align:center">
+      		$\theta^* = \theta_k - \sqrt{\frac{2\delta}{b^\top H^{-1}b}}H^{-1}b$ .
+    	</p>
+    	<p> One cancheck that this step indeed reduces the surrogate constraint value while staying within the trust region.
+    	As $H$ is positive definite the inverse $H^{-1}$ is positive definite as well, thus it holds $b^T H^{-1} b > 0$ and we obtain</p>
+    	<p style="text-align:center">
+      		$c + b^T(\theta^* - \theta_k) = c - \sqrt{\frac{2\delta}{b^\top H^{-1}b}} b^T H^{-1}b < c $ .
+    	</p>
+    	<p> With a more involved calculation one can also check that <p>
+    	<p style="text-align:center">
+      		$\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) = \delta$,
+    	</p>
+    	so the new iterate sits right on the edge of the trust region.
+  	<p> 
+        In the code of Chaudhary <d-cite key="Sapana"></d-cite> this analytically derived update step is implemented.
+  	</p>  
+    	
+    <h3> Results Showcase </h3>
     
-        <d-math block =""> \theta^* = \theta_k + \frac{1}{\lambda^*}H^{-1}(g - B\nu^*) </d-math>
-          Whereas $\nu^* = (\frac{\lambda^*c-r}{S})_+$ and
-          $\lambda^* =\arg \max
-          \frac{1}{2\lambda}(\frac{r^2}{s}-q) + \frac{\lambda}{2}(\frac{c^2}{s}-q)$ if  $\lambda c - r > 0$
-          <br>
-          <br>
-          or $\lambda^* =\arg \max\frac{1}{2}(\frac{q}{\lambda}+ \lambda \delta)$, if otherwise.
+    <p> In this section we present two models, one each for the environments we used,
+    	namely the LunarLander and the CartPole environment.
+    	While doing so we also introduce the constraint functions for the respective environments
+    	we used for our experiments.
+    </p>
+    
+    <h4> LunarLander environment </h4>
+    
+    <p> First we are going to present a model trained on the Lunarlander environment.
+    	Here the goal of the agent is to land on a landing pad in the middle of the screen.
+    	For details on the reward we refer to <d-cite key="LunarLander"></d-cite>, 
+    	most notably for us, the agent obtains negative reward for firing the side and main engines.
+    	For the constraint we decided to limit the speed of the aircraft.
+    	This is implemented in our code in the following way.
+    </p>
+    	
+    	<d-code block="" language="python">
+	      def LunarLander_vel(state, dtype, device, bound=1.5):
 
-          <br>
-          <br>
-          When it is however, infeasible, we use the following update rule:
+		#state[:, 2] velocity in x direction, state[:, 3] velocity in y direction
+		costs = torch.tensor(np.zeros(state.shape[0]), dtype=dtype).to(device)
+		idx = torch.abs(state[:, 2]) + torch.abs(state[:, 3]) > bound
+		costs[idx] = 1
+
+		return costs </d-code>
+	<p> In mathematical terms the constraint function is given by</p>
+	<p style="text-align:center">
+      		$C: \mathbb{R}^8 \to \mathbb{R} ~,~~C(s) = \begin{cases} 1, \text{ if } |s_3| + |s_4| > 1.5 \\ 0, \text{ else} \end{cases}.$
+    	</p>
+    <p> The agent is punished with a constraint cost of 1 if the 1-norm of the velocity-vector is above 1.5, elsewhise if it is below this threshhold, the agent receives a constraint cost of 0. <br>
+    	As we were unable to install the MuJoCo environments we opted to create a similar setting Achiam et al. <d-cite key="achiam2017constrained"></d-cite> implemented in the Humanoid-Circle environment.
+    	There the agent is rewarded for runnning in a circle, the larger this circle is and the faster he runs the more reward the agent obtains.
+    	At the same time the constraint function punished the agent if the circle was too big. 
+    	As we punish our agent for moving too fast, which should make him slow down by firing the main engine more, the constraint function should
+    	entice the agent to give up on reward. 
+    </p> 
     
-        <d-math block =""> \theta^* = \theta_k - \sqrt{\frac{2\delta}{b^\top H^{-1}b}}H^{-1}b</d-math>
-    <br>
-    <p> 
-          For our next step, we implemented the solution to the dual problem above using Python.
-          Before we showcase the results, it is clear that the algorithm might require great computational power, 
-          since we deal a lot with the inverse matrix problem ($H^{-1}b$). 
-          To improve the efficiency of the algorithm, we applied the CG method to solve the inverse matrix problem.
-          <br>
-          Furthermore, the trust region coefficients play an important role in our algorithm, since it would affect our backtrack step in case of infeasibility.
-    </p>  	
+    <p> Here is a video of several runs of our model after about 90 iterations. </p>
+    
+  <div style="display: flex; flex-direction: column; align-items: center; padding-top: -1em; padding-bottom: 1em;">
+		<video controls width = "500" height = "400">
+      <source src="images/LunarLander2.webm" type="video/webm">
+      Interactive plot displaying learning progress for different numbers of CG-iterations within each iteration
+		</video>
+	</div>
+    	
+	
+	<p> To visualize how well the model obeys to the constraint we plotted the speed of the aircraft throughout about 100 runs.
+		Each trajactory resembles the speed of the agent during one run.
+		As we can see almost all trajectories run below the limit.
+	</p>
+	
+	<div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em">
+		<img src="images/speed_limit.svg" alt="Plot displaying the speed of the aircraft throughout a run" style="max-width: 1000px;"></img>
+	</div>
+	
+	<p> Unfortunately we ran into multiple difficulties during training. For example in the LunarLander environment it was always the case that at some point the algorithm stopped working properly, sadly we could not figure out why.</p>
+	
+	<div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em">
+		<img src="images/Lunarlander_training.svg" alt="Plot displaying the learning progress" style="max-width: 1000px;"></img>
+	</div>
+    	
+    	<p> But we can see that for the first 100 iterations where the algorithm is working the constrained limit is being nicely tracked and the reward is increasing.</p>
+    	
+    <h4> CartPole environment </h4>
+    
+    Now we come to a model we trained on the CartPole environment.
+    Here the agent is rewarded for balancing a pole on a tiny cart, for detail on the environment we refer to <d-cite key="CartPole"></d-cite>.
+    For the constraint we decided to restrict the agent to only move in the middle part of the screen.
+    We also tried some more involved constraints but there we were less successful
+    	The constraint is implemented in our code in the following way.
+    </p>
+    	
+    	<d-code block="" language="python">
+	      def CartPole_pos(state, dtype, device, bound=2):
+
+		    # state[:, 0] position of the pole, ranges from -4.8 to 4.8
+		    # the cart is constrained to stay within the range [-bound, bound]
+		    costs = torch.tensor(np.zeros(state.shape[0]), dtype=dtype).to(device)
+		    idx = torch.abs(state[:, 0]) > bound
+		    costs[idx] = 1
+
+    		return costs 
+    	</d-code>
+    
+    <p> In mathematical terms the constraint function is given by</p>
+	<p style="text-align:center">
+      		$C: \mathbb{R}^4 \to \mathbb{R} ~,~~C(s) = \begin{cases} 1, \text{ if } |s_1| > 2 \\ 0, \text{ else} \end{cases}.$
+    	</p>
+    <p> The agent is punished with a constraint cost of 1 if he leaves middle part, elsewhise he stays in the middle the agent receives a constraint cost of 0.</p>
+    <p> Here is a video of our agent after about 100 iterations </p> 
+    
+    <div style="display: flex; flex-direction: column; align-items: center; padding-top: -1em; padding-bottom: 1em;">
+		<video controls width = "500" height = "400">
+      <source src="images/CartPole.webm" type="video/webm">
+		</video>
+	</div>
+	
+	When training in the CartPole environment we ran in to much less difficulties. Here is the learning progress of our model.
+	The reward is steadily increasing. It might look like the constraint is not being tracked so nice, but this just might be the case as
+	the limit is so low and hence the relative deviations are so big, indeed the constraint value drops below the limit every couple of iterations.
+	
+	<div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em">
+		<img src="images/CartPole_default.svg" alt="Plot displaying the learning progress" style="max-width: 1000px;"></img>
+	</div>
+    	
+    <h3> Experiments </h3>
+    
+    <p> In this section we present our experiments. 
+    As described in our introduction we experimented with different numbers of CG-iterations and different sizes for the trust region
+    and observed their impact on the learning progress.
+    </p>
+    
     <h4> CG iteration </h4>
     
     <p> As seen in the introductory part computing the CPO update involves a lot of expressions as <d-math> H^{-1}b, H^{-1}g </d-math>.
@@ -168,7 +309,8 @@
     <d-math block="">
       		\frac{||x-\hat{x}||}{||x||} \le K(A) \frac{||r||}{||b||},
     	</d-math>
-    <p>where <d-math> K(A) </d-math> is the condition number of <d-math> A </d-math> w.r.t. <d-math> ||\cdot|| </d-math> and <d-math> r = b - A\hat{x} </d-math> is the residual.
+    <p>where <d-math> K(A) </d-math> is the condition number of <d-math> A </d-math> w.r.t. <d-math> ||\cdot|| </d-math> and <d-math> r = b - A\hat{x} </d-math> is the residual, cf. <d-cite
+          key="liesen2023"></d-cite> Theorem 2.4.
     This bound tells us, if the matrix <d-math> A </d-math> has a reasonable condition number a small residual implies a good approximation.</p>
     	
     <d-figure id="residual-visualization">
@@ -241,56 +383,13 @@
       w.r.t $\delta = 0.05$, the graph oscilitates after the 60th iteration. On the other hand, the same case does not apply for an even larger $\delta = 0.1$. Ergo, we cannot confirm our hypothesis after having analyzed the LunarLander environment. 
       Although, this problem might occur because of a mistake in our technical implementation.
     </p>
-    <h4>Interactive Figures</h4>
-
-    <p>
-      Here's a dynamically instantiated "figure". We use Intersection Observers to allow loading resource-heavy
-      figures only when readers scroll close to them. The code for this is in <code>src/index.js</code>.
-    </p>
-
-    <d-figure id="svelte-example-dfigure">
-      <figure>
-        <div id="svelte-example-target"></div>
-        <figcaption>And a static figcaption. You can use citations<d-cite key="mercier2011humans"></d-cite> in this
-          figcaption, but not in text added by javascript.</figcaption>
-      </figure>
-    </d-figure>
-
-    <p>You can't use citation tags (<code>d-cite</code>) in figures that are dynamically loaded using Javascript.
-      Distill statically
-      analyzes your submission for its citations, because they need to be uploaded to indexers and organizations like <a
-        href="https://www.crossref.org/">CrossRef</a> and <a href="https://scholar.google.com">Google Scholar</a>.</p>
-
-    <p>That's it for the example article! Feel free to look at <a
-        href="https://github.com/distillpub?utf8=%E2%9C%93&q=post--&type=public">implementations
-        of existing Distill articles</a>, or ask for help in
-      the <a href="http://slack.distill.pub">Distill Slack Community</a>.</p>
 
   </d-article>
 
 
 
   <d-appendix>
-    <h3>Acknowledgments</h3>
-    <p>
-      We are deeply grateful to...
-    </p>
-
-    <p>
-      Many of our diagrams are based on...
-    </p>
-
-    <h3>Author Contributions</h3>
-    <p>
-      <b>Research:</b> Alex developed ...
-    </p>
-
-    <p>
-      <b>Writing & Diagrams:</b> The text was initially drafted by...
-    </p>
-
-
-    <d-footnote-list></d-footnote-list>
+ <d-footnote-list></d-footnote-list>
     <d-citation-list></d-citation-list>
   </d-appendix>
 

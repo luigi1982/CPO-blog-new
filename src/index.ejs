@@ -30,8 +30,14 @@
       which was presented in Achiam et al. <d-cite
       key="achiam2017constrained"></d-cite> 
       Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander.
-      To implement the CPO method, we apply the CG method to improve the algorithm. 
-      Furthermore, we experimented different CG iterations to see if the algorithm could be improved.
+      
+      <br> 
+      
+      In Achiam et al. <d-cite
+      key="achiam2017constrained"></d-cite> , the authors talk about linearizing the obective functions and the constraint functions
+      to approximately solve the CPO update as a convex optimization problem, which we can efficiently solve using duality.
+      The authors propose the solution to the dual problem and mention using the conjugate gradient method to approximately solve the inverse matrix problem during a CPO update, 
+      which we also apply in our implementation. Furthermore, we experimented different CG iterations to see if the algorithm could be improved as we increase the number of CG-iterations.
       <br>
       Also, it was mentioned in the paper that the implementation of trust region could accelerate the model's training.
       Theoretically, a model with a large trust region would converge to the objective function faster but fit it poorly,
@@ -56,18 +62,19 @@
         <li>Introduction of the algorithm</li>
           <ol>
             <li>Abstract theory</li>
-            <li>Solution</li>
+            <li>Solution, solving the dual problem and formulating a recovery step</li>
           </ol>
-        <li>Showcase</li>
+        <li>Results Showcase</li>
         <ol>
-          <li>CartPole</li>
-          <li>LunarLander</li>
+          <li>LunarLander Environment</li>
+          <li>CartPole Environment</li>
         </ol>
         <li>Experiments:</li>
         <ol>
           <li>CG-method</li>
           <li>Trust region step</li>
         </ol>
+        <li>Conclusion</li>
       </ol> 
     </p>   
   <h3>Introduction of the algorithm</h3>
@@ -130,7 +137,11 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
     	</p>
     	<p> The only question left to answer is how to obtain the optimal dual solutions $\lambda^*$ and $\nu^*$.
     	    Using strict duality Achiam et al. <d-cite key="achiam2017constrained"></d-cite> derive the following equalities for $\lambda^*$ and $\nu^*$,
-    	 $\nu^* = (\frac{\lambda^*c-r}{S})_+$ and </p>
+    	 
+
+      </p>
+        <p style="text-align:center">
+          $\nu^* = (\frac{\lambda^*c-r}{S})_+$</p>
         <p style="text-align:center">
         $\lambda^* =\arg \max_{\lambda \ge 0} \begin{cases}
         					f_a(\lambda) = \frac{1}{2\lambda}(\frac{r^2}{s}-q) + \frac{\lambda}{2}(\frac{c^2}{s}-q), \text{ if }  \lambda c - r > 0 \\
@@ -138,19 +149,35 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
 	</p>
 	<p> where here $q$ is given by $g^T H^{-1} g$. Both of these functions required for the calculation of $\lambda^*$ are of the form<p>
 	<p style="text-align:center">
-        $10$ ,
-	</p>
-        <p>When it is however infeasible Achiam et al. <d-cite key="achiam2017constrained"></d-cite> propose the following recovery step</p>
-        <p style="text-align:center">
+
+        $\max_{\lambda \geq 0} f(\lambda) = -\frac{1}{2}(\frac{A}{\lambda} + B\lambda)$
+      </p>
+      which has optimal value
+      <p style="text-align:center">
+        $f(\lambda^*) = -\sqrt{AB}$
+      </p>
+and optimal point
+<p style="text-align:center">
+  $\lambda^* = \frac{A}{B}$ 
+</p>
+which can serve as a piecewise optimal point for our dual function.
+<br>
+<p>
+  <br> 
+  When it is, however, infeasible to solve the convex optimization problem,
+    Achiam et al. <d-cite key="achiam2017constrained"></d-cite> propose the following recovery step</p>
+<p style="text-align:center">
+          
       		$\theta^* = \theta_k - \sqrt{\frac{2\delta}{b^\top H^{-1}b}}H^{-1}b$ .
     	</p>
-    	<p> One cancheck that this step indeed reduces the surrogate constraint value while staying within the trust region.
+    	<p> One can check that this step indeed reduces the surrogate constraint value while staying within the trust region.
     	As $H$ is positive definite the inverse $H^{-1}$ is positive definite as well, thus it holds $b^T H^{-1} b > 0$ and we obtain</p>
     	<p style="text-align:center">
       		$c + b^T(\theta^* - \theta_k) = c - \sqrt{\frac{2\delta}{b^\top H^{-1}b}} b^T H^{-1}b < c $ .
     	</p>
     	<p> With a more involved calculation one can also check that <p>
     	<p style="text-align:center">
+      
       		$\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) = \delta$,
     	</p>
     	so the new iterate sits right on the edge of the trust region.
@@ -378,12 +405,23 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
     <p>
       For the CartPole environment, our hypothesis seems to be true, since the agent trained with large $\delta$ managed
       to achieve a much higher reward but on the other hand, its constraint value never really managed to converge to the limit.
+      If you look at the graph closely, for small $\delta$ values, the agent has managed to stay somewhat close to the constraint.
       <br>
       For the LunarLander environment, the result, however, does not support our hypothesis. If we take a look at the reward values
       w.r.t $\delta = 0.05$, the graph oscilitates after the 60th iteration. On the other hand, the same case does not apply for an even larger $\delta = 0.1$. Ergo, we cannot confirm our hypothesis after having analyzed the LunarLander environment. 
       Although, this problem might occur because of a mistake in our technical implementation.
     </p>
 
+    <h3>Conclusion</h3>
+
+<p>
+In general, our CPO models achieve good reward performance and stay close to the constraint for a suitable trust region coefficient. 
+However, as you can see, we encountered some technical issues during our implementation, mainly in the LunarLander environment,
+where the model stops working properly after a certain point. 
+Unfortunately, because of the technical issues, we could not confirm any of our hypothesizes. 
+These problems might arise from the incompatibility of different PyTorch versions. 
+
+</p>
   </d-article>
 
 

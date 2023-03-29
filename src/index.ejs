@@ -29,7 +29,7 @@
       In this article, we will discuss the CPO method for safe reinforcement learning, 
       which was presented in Achiam et al. <d-cite
       key="achiam2017constrained"></d-cite> 
-      Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander
+      Inspired by the authors' idea, we use CPO to train two safe AI models for the OpenAI environments: CartPole and LunarLander.
       To implement the CPO method, we apply the CG method to improve the algorithm. 
       Furthermore, we experimented different CG iterations to see if the algorithm could be improved.
       <br>
@@ -77,7 +77,7 @@
   <p>Constrained policy optimization (CPO) is a policy search algorithm for
 constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-cite
         key="achiam2017constrained"></d-cite> derive an update step which theoretically guarantees constraint satisfaction whilst not decreasing the reward function. For details we refer to their paper <d-cite
-        key="achiam2017constrained"></d-cite>. In each iteration $k = 1,2, ...$ a problem of the following kind is approximately solved </p>
+        key="achiam2017constrained"></d-cite>. In each iteration $k = 1,2, ...$ to obtain a new policy $\pi_{k+1}$ a problem of the following kind is approximately solved </p>
 <d-math block="">
         \pi_{k+1} = \arg \max_{\pi \in \Pi_\theta} J(\pi),
     </d-math>

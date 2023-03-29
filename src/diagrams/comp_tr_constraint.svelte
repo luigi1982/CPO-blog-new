@@ -6,22 +6,22 @@
   
   // environment 1:LunarLander, 2:CartPole
   
-  function inputLcons(x) {
-  	document.getElementById("LunarBoxcons").checked = false;
+  function inputLtrcons(x) {
+  	document.getElementById("CartBoxtrcons").checked = false;
   	envcons = "LunarLander";
   }
   
-  function inputCcons(x) {
-  	document.getElementById("CartBoxcons").checked = false;
+  function inputCtrcons(x) {
+  	document.getElementById("LunarBoxtrcons").checked = false;
   	envcons= "CartPole";
   }
 </script>
 
 <div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em">
   <div style="text-align:center;">
-    <input type="checkbox" id="CartBoxcons" name="CartBoxcons" value="Cart" on:input={inputCcons}>
+    <input type="checkbox" id="CartBoxtrcons" name="CartBoxcons" value="Cart" on:input={inputCtrcons}>
     <label for="CartBoxcons"> CartPole</label>
-    <input type="checkbox" id="LunarBoxcons" name="LunarBoxcons" value="Lunar" on:input={inputLcons}>
+    <input type="checkbox" id="LunarBoxtrcons" name="LunarBoxcons" value="Lunar" on:input={inputLtrcons}>
     <label for="LunarBoxcons"> LunarLander</label>
   </div>
   <img

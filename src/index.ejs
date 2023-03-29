@@ -85,7 +85,7 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
         \text{s.t. } J_{C_i}(\pi) \le d_i \text{ for } i=1,...,m,  \quad
         D_{kl}(\pi, \pi_k) \le \delta ,
     </d-math>
-    <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, $J:\Pi_\theta \to \mathbb{R}$ is some reward function, $J_{C_i}:\Pi_\theta \to \mathbb{R}$ are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence.</p>
+    <p> where <d-math>\Pi_\theta</d-math> is some set of parametrized policies, $J:\Pi_\theta \to \mathbb{R}$ is some reward function, $J_{C_i}:\Pi_\theta \to \mathbb{R}$ are some constraint functions, <d-math>d_i</d-math> are the respective limits for <d-math>i = 1,...,m</d-math> and <d-math>D_{kl}</d-math> is the KL-divergence, which is implemented here as a kind of distance measure.</p>
         
         <p>For the practical implementation the theoretical mathematical objects in the problem above, we here only mentioned vaguely, are replaced by surrogate function which can be obtained by 				samples collected from evaluating the current policy. The problem then becomes</p>
         <d-math block="">
@@ -110,7 +110,7 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
         $B := [b_1,..., b_m]^\top, \quad$ $c :=  [c_1,..., c_m]^\top, \quad $ 
         $r := g^\top H^{-1} B, \quad $ $S := B^\top H^{-1} B$.
         </p>
-        <p>Moreover they state that the solution to the primal problem can be recovered in the following way</p>
+        <p>Moreover they state that the solution to the primal problem can be recovered in the following way when the dual is solved</p>
       	<p style="text-align:center">
       		$\theta^* = \theta_k + \frac{1}{\lambda^*}H^{-1}(g - B\nu^*),$
     	</p>

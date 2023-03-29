@@ -36,8 +36,8 @@
       In Achiam et al. <d-cite
       key="achiam2017constrained"></d-cite> , the authors talk about linearizing the obective functions and the constraint functions
       to approximately solve the CPO update as a convex optimization problem, which we can efficiently solve using duality.
-      The authors propose the solution to the dual problem and mention using the conjugate gradient method to approximately solve the inverse matrix problem during a CPO update, 
-      which we also apply in our implementation. Furthermore, we experimented different CG iterations to see if the algorithm could be improved as we increase the number of CG-iterations.
+      The authors propose the solution to the dual problem and mention using the conjugate gradient method (CG method) to approximately solve the inverse matrix problem during a CPO update, 
+      which we also apply in our implementation. Furthermore, we experimented different with the CG method to see if the algorithm could be improved as we increase the number of CG-iterations.
       <br>
       Also, it was mentioned in the paper that the implementation of trust region could accelerate the model's training.
       Theoretically, a model with a large trust region would converge to the objective function faster but fit it poorly,
@@ -105,7 +105,7 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
     <p>where here <d-math>g</d-math> is the gradient of the objective function, <d-math>H</d-math> is the hessian of the KL-divergence, <d-math>b_i</d-math> is the gradient of the constraint function and <d-math>c_i</d-math> is the current value of the constraint function for <d-math>i = 1,...,m</d-math>. </p>
       <p> As one assumes $H$ to be positive definite, all the functions appearing in this problem are either linear or convex, which makes this a convex optimization problem.
       	According to Achiam et al. <d-cite
-        key="achiam2017constrained"></d-cite> when the problem is feasible one can hence dualize it and the dual is given by
+        key="achiam2017constrained"></d-cite> when the problem is feasible, i.e. the set of solutions is not empty, one can hence dualize it and the dual is given by
       </p>
   
       <d-math block =""> 
@@ -147,24 +147,20 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
         					f_a(\lambda) = \frac{1}{2\lambda}(\frac{r^2}{s}-q) + \frac{\lambda}{2}(\frac{c^2}{s}-q), \text{ if }  \lambda c - r > 0 \\
 						f_b(\lambda) = \frac{1}{2}(\frac{q}{\lambda}+ \lambda \delta), \text{ if otherwise } \end{cases}$ ,
 	</p>
-	<p> where here $q$ is given by $g^T H^{-1} g$. Both of these functions required for the calculation of $\lambda^*$ are of the form<p>
+	<p> where here $q$ is given by $g^T H^{-1} g$. Both of these functions $f_a, f_b$ required for the calculation of $\lambda^*$ are of the form<p>
 	<p style="text-align:center">
 
-        $\max_{\lambda \geq 0} f(\lambda) = -\frac{1}{2}(\frac{A}{\lambda} + B\lambda)$
+        $f(\lambda) = -\frac{1}{2}(\frac{A}{\lambda} + B\lambda)$
       </p>
-      which has optimal value
+      for certain $A, B \in \mathbb{R}$ respectively. By deriving this expression and setting it equal to zero one easily obtains the optimal solution
       <p style="text-align:center">
-        $f(\lambda^*) = -\sqrt{AB}$
-      </p>
-and optimal point
-<p style="text-align:center">
-  $\lambda^* = \frac{A}{B}$ 
-</p>
-which can serve as a piecewise optimal point for our dual function.
+	  $\lambda^* = \frac{A}{B} ~.$ 
+	</p>
+	<p> Now one would have to check if the respective optimal solutions $\lambda^*_a, \lambda^*_b$ for $f_a$ and $f_b$ lie in the correct intervals and if not project them back in, but we 	will spare the details here.
+	Then everything left is to compare the values $f_a(\lambda^*_a)$ and $f_b(\lambda^*_b)$ and choose the one obtaining the higher value.
+	Basically this is in a nutshell how to derive the CPO update, when the problem is feasible.
 <br>
-<p>
-  <br> 
-  When it is, however, infeasible to solve the convex optimization problem,
+  When it is however infeasible, to obtain a feasible problem again,
     Achiam et al. <d-cite key="achiam2017constrained"></d-cite> propose the following recovery step</p>
 <p style="text-align:center">
           
@@ -180,9 +176,10 @@ which can serve as a piecewise optimal point for our dual function.
       
       		$\frac{1}{2} (\theta - \theta_k)^T H (\theta - \theta_k) = \delta$,
     	</p>
+    	<p> 
     	so the new iterate sits right on the edge of the trust region.
-  	<p> 
-        In the code of Chaudhary <d-cite key="Sapana"></d-cite> this analytically derived update step is implemented.
+  	<br> 
+        In the code of Chaudhary <d-cite key="Sapana"></d-cite> the approach described here is implemented, the optimal step is found by obtaining the optimal primal solution via computing the dual solution using the equalities derived by Achiam et al. <d-cite key="achiam2017constrained"></d-cite> .
   	</p>  
     	
     <h3> Results Showcase </h3>
@@ -219,9 +216,9 @@ which can serve as a piecewise optimal point for our dual function.
     <p> The agent is punished with a constraint cost of 1 if the 1-norm of the velocity-vector is above 1.5, elsewhise if it is below this threshhold, the agent receives a constraint cost of 0. <br>
     	As we were unable to install the MuJoCo environments we opted to create a similar setting Achiam et al. <d-cite key="achiam2017constrained"></d-cite> implemented in the Humanoid-Circle environment.
     	There the agent is rewarded for runnning in a circle, the larger this circle is and the faster he runs the more reward the agent obtains.
-    	At the same time the constraint function punished the agent if the circle was too big. 
+    	At the same time the constraint function punishes the agent if the circle is too big. 
     	As we punish our agent for moving too fast, which should make him slow down by firing the main engine more, the constraint function should
-    	entice the agent to give up on reward. 
+    	entice the agent to give up on reward, similar to <d-cite key="achiam2017constrained"></d-cite>.
     </p> 
     
     <p> Here is a video of several runs of our model after about 90 iterations. </p>

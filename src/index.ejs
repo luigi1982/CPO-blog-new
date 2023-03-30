@@ -187,7 +187,10 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
     <p> In this section we present two models, one each for the environments we used,
     	namely the LunarLander and the CartPole environment.
     	While doing so we also introduce the constraint functions for the respective environments
-    	we used for our experiments.
+    	we used for our experiments.      
+	<br> 
+	For parameterizing the policies we used neural networks with two hidden layers of size 100.
+      	Both environments required a scalar output.
     </p>
     
     <h4> LunarLander environment </h4>
@@ -412,11 +415,18 @@ constrained Markov decision processes (CMDPs). The authors of Achiam et al. <d-c
     <h3>Conclusion</h3>
 
 <p>
-In general, our CPO models achieve good reward performance and stay close to the constraint for a suitable trust region coefficient. 
-However, as you can see, we encountered some technical issues during our implementation, mainly in the LunarLander environment,
-where the model stops working properly after a certain point. 
-Unfortunately, because of the technical issues, we could not confirm any of our hypothesizes. 
-These problems might arise from the incompatibility of different PyTorch versions. 
+  In general, our CPO models achieve good reward performance and stay close to the constraint for a suitable trust region coefficient. 
+  However, as you can see, we encountered some technical issues during our implementation, mainly in the LunarLander environment. 
+  This problem might come from the incompatibility of PyTorch versions.
+<br>
+Despite that, we can still see that our second hypothesis is partially reasonable, at least we could confirm it in the CartPole environment. 
+Additionally, the performance of our model in the CartPole environment with sufficient coefficients demonstrates that CPO could be a reasonable choice for developing a safe AI. 
+Furthermore, if we manage to resolve the problem mentioned in the LunarLander environment, 
+our agent can perform consistently well during the entire training, as seen in the first 100 iterations.
+<br>
+All in all, our results coincide with the conclusion of  Achiam et al. <d-cite
+key="achiam2017constrained"></d-cite> (9th capital), 
+in which CPO guarantees an improvement in return and simultaneously satisfies the constraints, when training neural networks.
 
 </p>
   </d-article>
